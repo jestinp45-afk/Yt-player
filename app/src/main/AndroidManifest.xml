@@ -1,16 +1,11 @@
 
-<?xml version="1.0" encoding="utf-8"?>
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Internet permission -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Background audio permissions -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-    <uses-permission
-        android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <application
         android:allowBackup="true"
@@ -18,7 +13,6 @@
         android:label="YouTube Player"
         android:usesCleartextTraffic="false">
 
-        <!-- Main activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -30,7 +24,6 @@
 
         </activity>
 
-        <!-- Background music service -->
         <service
             android:name=".AudioPlaybackService"
             android:exported="true"
