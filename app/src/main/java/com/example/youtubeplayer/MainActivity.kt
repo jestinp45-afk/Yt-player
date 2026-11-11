@@ -417,22 +417,27 @@ fun YouTubePlayerApp() {
     }
 }
 
+
 @Composable
 private fun YouTubeEmbed(videoId: String) {
 
+    val appOrigin = "https://jestinp45-afk.github.io"
+    val appPageUrl = "$appOrigin/Yt-player/"
+
     AndroidView(
+        factory = { context ->
 
-        factory = { ctx ->
-
-            WebView(ctx).apply {
+            WebView(context).apply {
 
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 settings.loadsImagesAutomatically = true
-                settings.loadWithOverviewMode = true
                 settings.useWideViewPort = true
-
+                settings.loadWithOverviewMode = true
                 settings.mediaPlaybackRequiresUserGesture = true
+
+                CookieManager.getInstance()
+                    .setAcceptCookie(true)
 
                 CookieManager.getInstance()
                     .setAcceptThirdPartyCookies(this, true)
@@ -452,8 +457,51 @@ private fun YouTubeEmbed(videoId: String) {
 
                 webView.tag = videoId
 
-                webView.loadUrl(
-                    "https://www.youtube.com/embed/$videoId?playsinline=1"
+                val encodedOrigin = Uri.encode(appOrigin)
+
+                val html = """
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta name="viewport"
+                              content="width=device-width,
+                              initial-scale=1.0">
+                        <style>
+                            html, body {
+                                margin: 0;
+                                padding: 0;
+                                width: 100%;
+                                height: 100%;
+                                background: #000;
+                                overflow: hidden;
+                            }
+                            iframe {
+                                width: 100%;
+                                height: 100%;
+                                border: 0;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <iframe
+                            src="https://www.youtube.com/embed/$videoId?playsinline=1&enablejsapi=1&origin=$encodedOrigin"
+                            title="YouTube video player"
+                            allow="accelerometer; autoplay;
+                            clipboard-write; encrypted-media;
+                            gyroscope; picture-in-picture;
+                            fullscreen"
+                            allowfullscreen>
+                        </iframe>
+                    </body>
+                    </html>
+                """.trimIndent()
+
+                webView.loadDataWithBaseURL(
+                    appPageUrl,
+                    html,
+                    "text/html",
+                    "UTF-8",
+                    null
                 )
             }
         },
@@ -463,6 +511,7 @@ private fun YouTubeEmbed(videoId: String) {
             .height(220.dp)
     )
 }
+
 
 private fun extractVideoId(input: String): String? {
 
