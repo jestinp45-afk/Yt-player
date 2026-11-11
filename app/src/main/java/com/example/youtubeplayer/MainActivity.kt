@@ -1,19 +1,18 @@
 
 package com.example.youtubeplayer
 
+import android.app.PictureInPictureParams
 import android.content.ComponentName
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.util.Rational
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-
-import android.app.PictureInPictureParams
-import android.content.res.Configuration
-import android.os.Build
-import android.util.Rational
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,10 +21,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+
 import androidx.compose.material3.*
+
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,12 +43,18 @@ import androidx.media3.session.SessionToken
 
 import com.google.common.util.concurrent.MoreExecutors
 
-private val Ink = Color(0xFF080A10)
-private val Panel = Color(0xFF171A26)
-private val Purple = Color(0xFF9B87F5)
+// -------------------------------------
+// APP COLORS
+// -------------------------------------
+
+private val Ink = Color(0xFF090B12)
+private val Panel = Color(0xFF171B28)
+private val Purple = Color(0xFF9B8CFF)
 private val Muted = Color(0xFFA6AEC2)
 
-
+// -------------------------------------
+// MAIN ACTIVITY + PICTURE IN PICTURE
+// -------------------------------------
 
 class MainActivity : ComponentActivity() {
 
@@ -61,6 +70,7 @@ class MainActivity : ComponentActivity() {
     }
 
     fun openVideoPip() {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val params = PictureInPictureParams.Builder()
@@ -84,10 +94,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// -------------------------------------
+// MAIN APP SCREEN
+// -------------------------------------
+
 @Composable
 fun YouTubePlayerApp() {
 
-    var tab by remember { mutableIntStateOf(0) }
+    var tab by remember {
+        mutableIntStateOf(0)
+    }
 
     var videoInput by remember {
         mutableStateOf("")
@@ -95,6 +111,10 @@ fun YouTubePlayerApp() {
 
     var videoId by remember {
         mutableStateOf("M7lc1UVf-VE")
+    }
+
+    var playerMessage by remember {
+        mutableStateOf("")
     }
 
     var audioName by remember {
@@ -106,6 +126,14 @@ fun YouTubePlayerApp() {
     }
 
     val context = LocalContext.current
+
+    val activity = context as? MainActivity
+
+    val isInPipMode = activity?.isInPipMode == true
+
+    // ---------------------------------
+    // MEDIA SESSION CONNECTION
+    // ---------------------------------
 
     DisposableEffect(Unit) {
 
@@ -136,6 +164,10 @@ fun YouTubePlayerApp() {
         }
     }
 
+    // ---------------------------------
+    // LICENSED MUSIC FILE PICKER
+    // ---------------------------------
+
     val audioPicker =
         rememberLauncherForActivityResult(
             ActivityResultContracts.OpenDocument()
@@ -165,6 +197,10 @@ fun YouTubePlayerApp() {
             }
         }
 
+    // ---------------------------------
+    // APP THEME
+    // ---------------------------------
+
     MaterialTheme(
         colorScheme = darkColorScheme(
             background = Ink,
@@ -178,35 +214,43 @@ fun YouTubePlayerApp() {
         Scaffold(
             containerColor = Ink,
 
+            // Hide navigation bar in PiP
             bottomBar = {
 
-                NavigationBar(
-                    containerColor = Panel
-                ) {
+                if (!isInPipMode) {
 
-                    NavigationBarItem(
-                        selected = tab == 0,
-                        onClick = { tab = 0 },
-                        icon = {
-                            Icon(
-                                Icons.Default.OndemandVideo,
-                                contentDescription = "YouTube"
-                            )
-                        },
-                        label = { Text("YouTube") }
-                    )
+                    NavigationBar(
+                        containerColor = Panel
+                    ) {
 
-                    NavigationBarItem(
-                        selected = tab == 1,
-                        onClick = { tab = 1 },
-                        icon = {
-                            Icon(
-                                Icons.Default.LibraryMusic,
-                                contentDescription = "My music"
-                            )
-                        },
-                        label = { Text("My music") }
-                    )
+                        NavigationBarItem(
+                            selected = tab == 0,
+                            onClick = { tab = 0 },
+                            icon = {
+                                Icon(
+                                    Icons.Default.OndemandVideo,
+                                    contentDescription = "YouTube"
+                                )
+                            },
+                            label = {
+                                Text("YouTube")
+                            }
+                        )
+
+                        NavigationBarItem(
+                            selected = tab == 1,
+                            onClick = { tab = 1 },
+                            icon = {
+                                Icon(
+                                    Icons.Default.LibraryMusic,
+                                    contentDescription = "My music"
+                                )
+                            },
+                            label = {
+                                Text("My music")
+                            }
+                        )
+                    }
                 }
             }
 
@@ -215,103 +259,223 @@ fun YouTubePlayerApp() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(20.dp)
+                    .then(
+                        if (isInPipMode) {
+                            Modifier
+                        } else {
+                            Modifier
+                                .padding(padding)
+                                .verticalScroll(
+                                    rememberScrollState()
+                                )
+                                .padding(20.dp)
+                        }
+                    )
             ) {
 
-                Text(
-                    "YOUTUBE PLAYER",
-                    color = Purple,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
-                )
+                // ---------------------------------
+                // NORMAL APP HEADER
+                // ---------------------------------
 
-                Spacer(Modifier.height(8.dp))
+                if (!isInPipMode) {
 
-                Text(
-                    if (tab == 0)
-                        "Watch what you love."
-                    else
-                        "Your music, your space.",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                    Text(
+                        "YOUTUBE PLAYER",
+                        color = Purple,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
+                    )
 
-                Text(
-                    "A calmer way to play.",
-                    color = Muted
-                )
+                    Spacer(Modifier.height(8.dp))
 
-                Spacer(Modifier.height(22.dp))
+                    Text(
+                        if (tab == 0)
+                            "Watch what you love."
+                        else
+                            "Your music, your space.",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        "A calmer way to play.",
+                        color = Muted
+                    )
+
+                    Spacer(Modifier.height(22.dp))
+                }
+
+                // ---------------------------------
+                // YOUTUBE TAB
+                // ---------------------------------
 
                 if (tab == 0) {
 
-                    OutlinedTextField(
-                        value = videoInput,
-                        onValueChange = {
-                            videoInput = it
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        label = {
-                            Text("YouTube video URL or ID")
-                        },
-                        trailingIcon = {
+                    if (!isInPipMode) {
 
-                            IconButton(
-                                onClick = {
+                        OutlinedTextField(
+                            value = videoInput,
 
-                                    val extracted =
-                                        extractVideoId(videoInput)
+                            onValueChange = {
+                                videoInput = it
+                                playerMessage = ""
+                            },
 
-                                    if (extracted != null) {
-                                        videoId = extracted
+                            modifier = Modifier.fillMaxWidth(),
+
+                            singleLine = true,
+
+                            label = {
+                                Text("YouTube video URL or ID")
+                            },
+
+                            placeholder = {
+                                Text("Paste YouTube link here")
+                            },
+
+                            trailingIcon = {
+
+                                IconButton(
+                                    onClick = {
+
+                                        val extracted =
+                                            extractVideoId(videoInput)
+
+                                        if (extracted != null) {
+
+                                            videoId = extracted
+
+                                            playerMessage =
+                                                "Video loaded. Use YouTube's play button."
+
+                                        } else {
+
+                                            playerMessage =
+                                                "Invalid YouTube link. Check the URL."
+                                        }
                                     }
+                                ) {
+
+                                    Icon(
+                                        Icons.Default.PlayArrow,
+                                        contentDescription = "Load video"
+                                    )
                                 }
-                            ) {
-
-                                Icon(
-                                    Icons.Default.PlayArrow,
-                                    contentDescription = "Load video"
-                                )
                             }
-                        }
-                    )
+                        )
 
-                    Spacer(Modifier.height(14.dp))
-
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = Panel
-                        ),
-                        shape = RoundedCornerShape(22.dp)
-                    ) {
-
-                        Column(
-                            Modifier.padding(12.dp)
-                        ) {
+                        if (playerMessage.isNotEmpty()) {
 
                             Text(
-                                "Official YouTube player",
-                                fontWeight = FontWeight.SemiBold
-                            )
-
-                            Spacer(Modifier.height(10.dp))
-
-                            YouTubeEmbed(videoId)
-
-                            Spacer(Modifier.height(8.dp))
-
-                            Text(
-                                "YouTube playback follows YouTube's player rules. Background playback is not enabled for YouTube videos.",
-                                color = Muted,
+                                playerMessage,
+                                color = Purple,
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
+
+                        Spacer(Modifier.height(14.dp))
                     }
 
-                } else {
+                    // ---------------------------------
+                    // VIDEO PLAYER CARD
+                    // Keep the player in the same
+                    // composition when entering PiP.
+                    // ---------------------------------
+
+                    Card(
+                        modifier = if (isInPipMode) {
+                            Modifier.fillMaxSize()
+                        } else {
+                            Modifier.fillMaxWidth()
+                        },
+
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isInPipMode) {
+                                Color.Black
+                            } else {
+                                Panel
+                            }
+                        ),
+
+                        shape = RoundedCornerShape(
+                            if (isInPipMode) 0.dp else 22.dp
+                        )
+                    ) {
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(
+                                    if (isInPipMode) {
+                                        Modifier
+                                    } else {
+                                        Modifier.padding(12.dp)
+                                    }
+                                )
+                        ) {
+
+                            if (!isInPipMode) {
+
+                                Text(
+                                    "Official YouTube player",
+                                    fontWeight = FontWeight.SemiBold
+                                )
+
+                                Spacer(Modifier.height(10.dp))
+                            }
+
+                            YouTubeEmbed(
+                                videoId = videoId,
+                                isInPipMode = isInPipMode
+                            )
+
+                            if (!isInPipMode) {
+
+                                Spacer(Modifier.height(8.dp))
+
+                                Text(
+                                    "YouTube playback follows YouTube's player rules. Background playback is not enabled for YouTube videos.",
+                                    color = Muted,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    }
+
+                    // ---------------------------------
+                    // MINI PLAYER BUTTON
+                    // ---------------------------------
+
+                    if (!isInPipMode) {
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Button(
+                            onClick = {
+                                activity?.openVideoPip()
+                            },
+
+                            modifier = Modifier.fillMaxWidth(),
+
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Purple
+                            )
+                        ) {
+
+                            Text(
+                                "Open Mini Player",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                // ---------------------------------
+                // LICENSED MUSIC TAB
+                // ---------------------------------
+
+                else if (!isInPipMode) {
 
                     Card(
                         colors = CardDefaults.cardColors(
@@ -383,6 +547,7 @@ fun YouTubePlayerApp() {
                                         controller?.seekToPreviousMediaItem()
                                     }
                                 ) {
+
                                     Icon(
                                         Icons.Default.SkipPrevious,
                                         "Previous"
@@ -391,7 +556,9 @@ fun YouTubePlayerApp() {
 
                                 IconButton(
                                     onClick = {
+
                                         controller?.let {
+
                                             if (it.isPlaying) {
                                                 it.pause()
                                             } else {
@@ -418,6 +585,7 @@ fun YouTubePlayerApp() {
                                         controller?.seekToNextMediaItem()
                                     }
                                 ) {
+
                                     Icon(
                                         Icons.Default.SkipNext,
                                         "Next"
@@ -428,178 +596,31 @@ fun YouTubePlayerApp() {
                     }
                 }
 
-                Spacer(Modifier.height(20.dp))
+                // ---------------------------------
+                // FOOTER
+                // ---------------------------------
 
-                Text(
-                    "BUILT FOR YOUR EVERYDAY LISTENING",
-                    color = Muted,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold
-                )
+                if (!isInPipMode) {
 
-                Text(
-                    "Premium dark • Simple controls • Your library",
-                    color = Muted
-                )
-            }
-        }
-    }
-}
+                    Spacer(Modifier.height(20.dp))
 
+                    Text(
+                        "BUILT FOR YOUR EVERYDAY LISTENING",
+                        color = Muted,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
 
-@Composable
-private fun YouTubeEmbed(videoId: String) {
-
-    val appOrigin = "https://jestinp45-afk.github.io"
-    val appPageUrl = "$appOrigin/Yt-player/"
-
-    AndroidView(
-        factory = { context ->
-
-            WebView(context).apply {
-
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
-                settings.loadsImagesAutomatically = true
-                settings.useWideViewPort = true
-                settings.loadWithOverviewMode = true
-                settings.mediaPlaybackRequiresUserGesture = true
-
-                CookieManager.getInstance()
-                    .setAcceptCookie(true)
-
-                CookieManager.getInstance()
-                    .setAcceptThirdPartyCookies(this, true)
-
-                webChromeClient = WebChromeClient()
-                webViewClient = WebViewClient()
-
-                setBackgroundColor(
-                    android.graphics.Color.BLACK
-                )
-            }
-        },
-
-        update = { webView ->
-
-            if (webView.tag != videoId) {
-
-                webView.tag = videoId
-
-                val encodedOrigin = Uri.encode(appOrigin)
-
-                val html = """
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta name="viewport"
-                              content="width=device-width,
-                              initial-scale=1.0">
-                        <style>
-                            html, body {
-                                margin: 0;
-                                padding: 0;
-                                width: 100%;
-                                height: 100%;
-                                background: #000;
-                                overflow: hidden;
-                            }
-                            iframe {
-                                width: 100%;
-                                height: 100%;
-                                border: 0;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <iframe
-                            src="https://www.youtube.com/embed/$videoId?playsinline=1&enablejsapi=1&origin=$encodedOrigin"
-                            title="YouTube video player"
-                            allow="accelerometer; autoplay;
-                            clipboard-write; encrypted-media;
-                            gyroscope; picture-in-picture;
-                            fullscreen"
-                            allowfullscreen>
-                        </iframe>
-                    </body>
-                    </html>
-                """.trimIndent()
-
-                webView.loadDataWithBaseURL(
-                    appPageUrl,
-                    html,
-                    "text/html",
-                    "UTF-8",
-                    null
-                )
-            }
-        },
-
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp)
-    )
-}
-
-
-private fun extractVideoId(input: String): String? {
-
-    val value = input.trim()
-
-    if (
-        value.matches(
-            Regex("^[A-Za-z0-9_-]{11}$")
-        )
-    ) {
-        return value
-    }
-
-    val url = if (value.contains("://")) {
-        value
-    } else {
-        "https://$value"
-    }
-
-    val uri = runCatching {
-        Uri.parse(url)
-    }.getOrNull() ?: return null
-
-    val host = uri.host?.lowercase() ?: return null
-
-    val id = when {
-
-        host == "youtu.be" -> {
-            uri.pathSegments.firstOrNull()
-        }
-
-        host == "youtube.com" ||
-        host.endsWith(".youtube.com") -> {
-
-            uri.getQueryParameter("v")
-                ?: uri.pathSegments.let { segments ->
-
-                    val index = segments.indexOfFirst {
-                        it in listOf(
-                            "embed",
-                            "shorts",
-                            "live"
-                        )
-                    }
-
-                    if (index >= 0) {
-                        segments.getOrNull(index + 1)
-                    } else {
-                        null
-                    }
+                    Text(
+                        "Premium dark • Simple controls • Your library",
+                        color = Muted
+                    )
                 }
+            }
         }
-
-        else -> null
-    }
-
-    return id?.takeIf {
-        it.matches(
-            Regex("^[A-Za-z0-9_-]{11}$")
-        )
     }
 }
+
+// -------------------------------------
+// YOUTUBE WEBVIEW
+// ------------------
