@@ -1,4 +1,5 @@
 
+
 package com.example.youtubeplayer
 
 import android.content.ComponentName
@@ -17,14 +18,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-
 import androidx.compose.material3.*
-
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,10 +36,11 @@ import androidx.media3.session.SessionToken
 
 import com.google.common.util.concurrent.MoreExecutors
 
-private val Ink = Color(0xFF090B12)
-private val Panel = Color(0xFF171B28)
-private val Purple = Color(0xFF9B8CFF)
+private val Ink = Color(0xFF080A10)
+private val Panel = Color(0xFF171A26)
+private val Purple = Color(0xFF9B87F5)
 private val Muted = Color(0xFFA6AEC2)
+
 
 class MainActivity : ComponentActivity() {
 
