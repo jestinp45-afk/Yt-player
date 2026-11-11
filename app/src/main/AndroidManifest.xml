@@ -1,20 +1,47 @@
+
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Internet access for YouTube player -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Background audio playback -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <application android:allowBackup="true" android:label="YouTube Player"
-        android:theme="@android:style/Theme.Material.NoActionBar">
-        <activity android:name=".MainActivity" android:exported="true">
+
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <application
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:label="YouTube Player"
+        android:theme="@style/Theme.Material3.NoActionBar">
+
+        <!-- Main application screen -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
-        <service android:name=".AudioPlaybackService"
-            android:foregroundServiceType="mediaPlayback" android:exported="true">
+
+        <!-- Background music playback service -->
+        <service
+            android:name=".AudioPlaybackService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService" />
             </intent-filter>
+
         </service>
+
     </application>
+
 </manifest>
