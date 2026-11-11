@@ -1,5 +1,4 @@
 
-
 package com.example.youtubeplayer
 
 import android.content.ComponentName
@@ -47,7 +46,11 @@ private val Purple = Color(0xFF9B87F5)
 private val Muted = Color(0xFFA6AEC2)
 
 
+
 class MainActivity : ComponentActivity() {
+
+    var isInPipMode by mutableStateOf(false)
+        private set
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +58,29 @@ class MainActivity : ComponentActivity() {
         setContent {
             YouTubePlayerApp()
         }
+    }
+
+    fun openVideoPip() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            val params = PictureInPictureParams.Builder()
+                .setAspectRatio(Rational(16, 9))
+                .build()
+
+            enterPictureInPictureMode(params)
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration
+    ) {
+        super.onPictureInPictureModeChanged(
+            isInPictureInPictureMode,
+            newConfig
+        )
+
+        isInPipMode = isInPictureInPictureMode
     }
 }
 
