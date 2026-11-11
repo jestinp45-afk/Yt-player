@@ -13,16 +13,20 @@
         android:label="YouTube Player"
         android:usesCleartextTraffic="false">
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
+        
+<activity
+    android:name=".MainActivity"
+    android:exported="true"
+    android:supportsPictureInPicture="true"
+    android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
 
-        </activity>
+</activity>
+        
 
         <service
             android:name=".AudioPlaybackService"
